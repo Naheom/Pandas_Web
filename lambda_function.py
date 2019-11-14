@@ -8,7 +8,6 @@ import os
 import logging
 import io
 import numpy as np
-from datetime import datetime
 
 logger = logging.getLogger('basic_logger')
 logger.setLevel(logging.DEBUG)
@@ -67,6 +66,7 @@ def lambda_handler(event, context):
         # Evaluating User Inputs
         try:
             expected_output = runCode(original_df, userSolution)
+            
             if isinstance(expected_output , str):
                 userHtmlFeedback = expected_output
             elif isinstance(expected_output,np.integer):
@@ -77,13 +77,11 @@ def lambda_handler(event, context):
                 userHtmlFeedback = expected_output.to_html()
             else:
                 userHtmlFeedback = expected_output.to_html()
-                print("I AM HERE")
 
+                
         except:
             errorStatus = True
             logger.exception('Debug Message')
-            
-        print("Hello World", userHtmlFeedback)
         
         if not errorStatus:
             pass
@@ -174,8 +172,6 @@ def lambda_handler(event, context):
         else:
             theOutput = "Great Job! There is no error messages."
         
-        body = json.loads(event.get('body','{}'))
- 
         return {
             "statusCode": 200,
             "headers": {
