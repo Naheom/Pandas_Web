@@ -1,5 +1,5 @@
 # http://alanwsmith.com/capturing-python-log-output-in-a-variable
-from botocore.vendored import requests
+
 import json
 import pandas as pd
 import boto3 as bt3
@@ -14,29 +14,6 @@ logger = logging.getLogger('basic_logger')
 logger.setLevel(logging.DEBUG)
 
 status_check = [0]*10  
-dynamodb = bt3.resource('dynamodb')
-
-def save_log(logData):
-    # Comment out one or both of these
-    result = save_dynamodb_log(logData)
-
-    return result
-    
-
-def save_dynamodb_log(logData):
-    timestamp = str(datetime.utcnow().timestamp())
-
-    table = dynamodb.Table('loggingTable')
-    
-    log = logData.copy() # A shallow copy
-    log['itemId'] = str(timestamp) #str(uuid.uuid1()) for more granular keys
-    log['createdAt'] = timestamp
-    
-
-    # write logData to dynamoDB
-    table.put_item(Item=log)
-    return logData
-
 
 def lambda_handler(event, context):
     
@@ -90,7 +67,6 @@ def lambda_handler(event, context):
         # Evaluating User Inputs
         try:
             expected_output = runCode(original_df, userSolution)
-            
             if isinstance(expected_output , str):
                 userHtmlFeedback = expected_output
             elif isinstance(expected_output,np.integer):
@@ -101,11 +77,13 @@ def lambda_handler(event, context):
                 userHtmlFeedback = expected_output.to_html()
             else:
                 userHtmlFeedback = expected_output.to_html()
+                print("I AM HERE")
 
-                
         except:
             errorStatus = True
             logger.exception('Debug Message')
+            
+        print("Hello World", userHtmlFeedback)
         
         if not errorStatus:
             pass
@@ -185,8 +163,6 @@ def lambda_handler(event, context):
             theMessage = "<div>Incorrect. Please try again.</div><br>"
         
         progress = status_check.count(1)
-        print("Status Check", status_check)
-        print("Progress", progress)
         
         ### Pull the contents back into a string and close the stream
         log_contents = log_capture_string.getvalue()
@@ -200,7 +176,6 @@ def lambda_handler(event, context):
         
         body = json.loads(event.get('body','{}'))
  
-        result = save_log(body)
         return {
             "statusCode": 200,
             "headers": {
